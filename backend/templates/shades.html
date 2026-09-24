@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block body %}
+<h2>汤色比色卡专页</h2>
+
+<section>
+  <h3>档位规则表</h3>
+  <p class="readonly-hint">
+    规则只在交评当时生效：改规则只影响此后的新交评，已落账的台账行保持冻结、不会改写。
+    {% if not can_write %}观察员仅可查看，不能修改规则。{% endif %}
+  </p>
+  <table>
+    <thead>
+      <tr><th>档位</th><th>当前区间（汤色分）</th><th>上界</th><th>上界是否含等号</th><th>最近修改</th>{% if can_write %}<th></th>{% endif %}</tr>
+    </thead>
+    <tbody>
+      {% for tier, label in tiers %}
+      {% set r = rules_by_tier[tier] %}
+      {% set form_id = 'rule-form-' ~ tier %}
+      <tr>
+        <td><span class="shade-tag {{ tier }}">{{ label }}</span></td>
+        <td>{{ band_text(tier, rules) }}</td>
+        {% if tier == 'dark' %}
+        <td colspan="3">最深档无上界</td>
+        {% if can_write %}<td></td>{% endif %}
+        {% else %}
+        <td><input form="{{ form_id }}" name="upper" type="number" step="0.1" min="0" max="10"
+                   value="{{ '%g'|format(r.upper) }}" style="width:80px"
+                   {% if not can_write %}disabled{% endif %} /></td>
+        <td><input form="{{ form_id }}" name="upper_inclusive" type="checkbox"
+                   {% if r.upper_inclusive %}checked{% endif %}
+                   {% if not can_write %}disabled{% endif %} /></td>
+        <td>{{ r.updated_by }} · {{ r.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        {% if can_write %}
+        <td>
+          <form id="{{ form_id }}" method="post"
+                action="{{ url_for('update_rule', tier=tier) }}{% if lot %}?lot={{ lot }}{% endif %}">
+            <button>改规则</button>
+          </form>
+        </td>
+        {% endif %}
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section style="margin-top:24px;">
+  <h3>比色台账（冻结快照）</h3>
+  <form method="get" style="padding:0; background:none;">
+    <label>按批次翻台账：
+      <select name="lot" onchange="this.form.submit()">
+        <option value="">全部批次</option>
+        {% for l in lots %}
+        <option value="{{ l }}" {% if l == lot %}selected{% endif %}>{{ l }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <noscript><button>筛选</button></noscript>
+  </form>
+
+  <table>
+    <thead>
+      <tr><th>时刻（冻结）</th><th>批次</th><th>汤色分（冻结）</th><th>档位（冻结）</th><th>提交人</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for e in ledger %}
+      <tr>
+        <td>{{ e.submitted_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        <td>{{ e.lot }}</td>
+        <td>{{ '%g'|format(e.liquor) }}</td>
+        <td><span class="shade-tag {{ e.shade }}">{{ shade_labels[e.shade] }}</span></td>
+        <td>{{ e.submitted_by }}</td>
+        <td><a href="{{ url_for('detail', cupping_id=e.cupping_id) }}">详情</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="readonly-hint">该批次暂无台账行。</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="pager">
+    <span>共 {{ total }} 行，第 {{ page }} / {{ total_pages }} 页</span>
+    {% if page > 1 %}
+      <a href="{{ url_for('shades', lot=lot, page=page-1) }}">上一页</a>
+    {% endif %}
+    {% if page < total_pages %}
+      <a href="{{ url_for('shades', lot=lot, page=page+1) }}">下一页</a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,6 +1,8 @@
 <tr>
   <td>{{ row.lot }}</td>
+  <td>{% if row.shade %}<span class="shade-tag {{ row.shade }}">{{ shade_labels[row.shade] }}</span>{% endif %}</td>
   <td>{{ row.score }}</td>
   <td class="{% if row.verdict == '通过' %}pass{% else %}fail{% endif %}">{{ row.verdict }}</td>
   <td>{{ row.note }}</td>
+  <td><a href="{{ url_for('detail', cupping_id=row.id) }}">详情</a></td>
 </tr>

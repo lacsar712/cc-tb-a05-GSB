@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block body %}
+<h2>审评详情 · {{ row.lot }}</h2>
+<table>
+  <tr><th>批次</th><td>{{ row.lot }}</td></tr>
+  <tr><th>汤色分</th><td>{{ row.liquor }}</td></tr>
+  <tr>
+    <th>比色卡档位</th>
+    <td><span class="shade-tag {{ row.shade }}">{{ shade_label }}</span>
+        （交评时按当时规则冻结，不随后续规则改动变化）</td>
+  </tr>
+  <tr><th>香气</th><td>{{ row.aroma }}</td></tr>
+  <tr><th>滋味</th><td>{{ row.taste }}</td></tr>
+  <tr><th>加权分</th><td>{{ row.score }}</td></tr>
+  <tr><th>结论</th><td class="{% if row.verdict == '通过' %}pass{% else %}fail{% endif %}">{{ row.verdict }}</td></tr>
+  <tr><th>说明</th><td>{{ row.note }}</td></tr>
+  <tr><th>提交人</th><td>{{ row.created_by }}</td></tr>
+  <tr><th>提交时刻</th><td>{{ row.created_at.strftime('%Y-%m-%d %H:%M:%S %Z') }}</td></tr>
+</table>
+<p><a href="{{ url_for('shades', lot=row.lot) }}">在比色台账中查看该批次</a> ·
+   <a href="{{ url_for('home') }}">返回审评台</a></p>
+{% endblock %}
