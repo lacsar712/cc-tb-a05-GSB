@@ -7,11 +7,21 @@
   <input name="aroma" type="number" step="0.1" min="0" max="10" placeholder="香气" required />
   <input name="taste" type="number" step="0.1" min="0" max="10" placeholder="滋味" required />
   <input name="liquor" type="number" step="0.1" min="0" max="10" placeholder="汤色" required />
+  <fieldset class="colorcard">
+    <legend>汤色比色卡档位（必选）</legend>
+    {% for rule in rules %}
+    <label class="chip" style="--swatch: {{ swatches[rule.grade] }}">
+      <input type="radio" name="grade" value="{{ rule.grade }}" required />
+      <span class="dot"></span>{{ labels[rule.grade] }}<span class="notice">（{{ rule.range_text }}）</span>
+    </label>
+    {% endfor %}
+    <a href="{{ url_for('colorimetry') }}">比色规则与台账</a>
+  </fieldset>
   <button>提交</button>
 </form>
 {% endif %}
 <table>
-  <thead><tr><th>批次</th><th>加权分</th><th>结论</th><th>说明</th></tr></thead>
+  <thead><tr><th>批次</th><th>加权分</th><th>结论</th><th>说明</th><th>档位</th></tr></thead>
   <tbody id="rows">
     {% for row in rows %}{% include "_row.html" %}{% endfor %}
   </tbody>

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block body %}
+<h2>汤色比色卡 · 规则表</h2>
+{% if can_write %}
+<form method="post" action="{{ url_for('update_rules') }}">
+  <table>
+    <thead><tr><th>档位</th><th>色样</th><th>区间</th><th>上限</th></tr></thead>
+    <tbody>
+      {% for rule in rules %}
+      <tr>
+        <td>{{ labels[rule.grade] }}</td>
+        <td><span class="dot" style="--swatch: {{ swatches[rule.grade] }}"></span></td>
+        <td>{{ rule.range_text }}</td>
+        <td><input name="max_{{ rule.grade }}" type="number" step="0.1" min="0" max="10"
+                   value="{{ rule.max_score }}" required /></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <button>保存规则</button>
+  <p class="notice">改规则只影响新交评，已入台账的记录不回改。</p>
+</form>
+{% else %}
+<table>
+  <thead><tr><th>档位</th><th>色样</th><th>区间</th></tr></thead>
+  <tbody>
+    {% for rule in rules %}
+    <tr>
+      <td>{{ labels[rule.grade] }}</td>
+      <td><span class="dot" style="--swatch: {{ swatches[rule.grade] }}"></span></td>
+      <td>{{ rule.range_text }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p class="notice">观察员仅可查看规则与台账，不能交评、不能改规则。</p>
+{% endif %}
+
+<h2>比色台账</h2>
+<form method="get" action="{{ url_for('colorimetry') }}">
+  <select name="lot">
+    <option value="">全部批次</option>
+    {% for l in lots %}
+    <option value="{{ l }}" {% if l == lot %}selected{% endif %}>{{ l }}</option>
+    {% endfor %}
+  </select>
+  <button>按批次翻台账</button>
+</form>
+<table>
+  <thead><tr><th>时刻</th><th>批次</th><th>汤色分</th><th>档位</th><th>提交人</th></tr></thead>
+  <tbody>
+    {% for e in entries %}
+    <tr>
+      <td>{{ e.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+      <td>{{ e.lot }}</td>
+      <td>{{ e.liquor }}</td>
+      <td>{{ labels[e.grade] }}</td>
+      <td>{{ e.created_by }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5">台账暂无记录</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
